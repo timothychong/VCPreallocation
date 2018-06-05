@@ -101,7 +101,7 @@ IQRouter::IQRouter( Configuration const & config, Module *parent,
         module_name.str("");
     }
 
-    usedby_prev.resize(_outputs * _vcs);
+    usedby_prev.resize(_outputs);
 
     // Alloc allocators
     string vc_alloc_type = config.GetStr( "vc_allocator" );
@@ -285,10 +285,13 @@ void IQRouter::_InternalStep( )
         //_vc_allocator->PrintGrants( &std::cout );
         for(int i = 0 ; i < _outputs; i++) {
             BufferState * dest_buf = _next_buf[i];
+            usedby_prev[i] = 0;
             for (int j = 0; j < _vcs; j++) {
                 int used = dest_buf->UsedBy(j);
+                if (used >= 0)
+                    usedby_prev[i] ++;
                 //printf("%d ", used);
-                usedby_prev[i] = used;
+                //usedby_prev[i * _vcs + j] = used;
             }
             //printf("\n");
         }
@@ -766,26 +769,23 @@ void IQRouter::_VCAllocEvaluate( )
         if(output_and_vc >= 0) {
 
 
-    if (_id == 2) {
-        //printf("CCCCycle: %d\n", GetSimTime());
-    }
-
-            if (usedby_prev[output_and_vc] < 0) {
-                assert(f->head);
-
-                double rf = RandomFloat();
-                if (rf < _predict_accuracy)
-                    (((Flit *)f )->saved_vc_alloc) ++;
-
-            }
-            //if (previously_assigned_input < 0) {
-                //// This VC allocation stage can be saved because the VC is not previously assigned
-            //}
-
             int const match_output = output_and_vc / _vcs;
             assert((match_output >= 0) && (match_output < _outputs));
             int const match_vc = output_and_vc % _vcs;
             assert((match_vc >= 0) && (match_vc < _vcs));
+
+            assert(usedby_prev[match_output] <= _vcs);
+
+            if (usedby_prev[match_output] < _vcs) {
+                assert(f->head);
+
+                double rf = RandomFloat();
+                if (rf < _predict_accuracy) {
+                    (((Flit *)f )->saved_vc_alloc) ++;
+                    usedby_prev[match_output]++;
+                }
+
+            }
 
             if(f->watch) {
                 *gWatchOut << GetSimTime() << " | " << FullName() << " | "

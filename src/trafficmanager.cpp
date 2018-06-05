@@ -736,7 +736,7 @@ void TrafficManager::_RetireFlit( Flit *f, int dest )
                (_plat_stats[f->cl]->Max() < (f->atime - head->itime)))
                 _slowest_packet[f->cl] = f->pid;
             _plat_stats[f->cl]->AddSample( f->atime - head->ctime);
-            _plat_spec_stats[f->cl]->AddSample( f->atime - head->ctime - f->saved_vc_alloc);
+            _plat_spec_stats[f->cl]->AddSample( f->atime - head->ctime - head->saved_vc_alloc);
             _nlat_stats[f->cl]->AddSample( f->atime - head->itime);
             _frag_stats[f->cl]->AddSample( (f->atime - head->atime) - (f->id - head->id) );
 

@@ -83,4 +83,4 @@ traffic       = uniform;
 injection_rate = $INJECT_RATE$;
 predict_accuracy = $PREDICT_ACCURACY$;
 
-stats_out = $OUTPUT$;
+stats_out = stats_out.m;
